@@ -3,7 +3,7 @@
 # ufw includes sensible ICMP defaults.
 
 - name: Install ufw
-  apt: pkg=ufw state=present
+  package: name=ufw state=present
   tags:
     - dependencies
     - ufw

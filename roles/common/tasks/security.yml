@@ -1,5 +1,5 @@
 - name: Install security-related packages
-  apt: pkg={{ item }} state=installed
+  package: name={{ item }} state=installed
   with_items:
     - fail2ban
     - whois
@@ -11,10 +11,17 @@
 - name: Copy fail2ban configuration into place
   template: src=etc_fail2ban_jail.local.j2 dest=/etc/fail2ban/jail.local
   notify: restart fail2ban
+  when: ansible_os_family == 'Debian'
+
+  name: Copy fail2ban configuration into place
+  template: src=etc_fail2ban_fail2ban.d_00-local.conf.j2 dest=/etc/fail2ban/fail2ban.d/00-local.conf
+  notify: restart fail2ban
+  when: ansible_os_family == 'RedHat'
 
 - name: Copy fail2ban dovecot configuration into place
   copy: src=etc_fail2ban_filter.d_dovecot-pop3imap.conf dest=/etc/fail2ban/filter.d/dovecot-pop3imap.conf
   notify: restart fail2ban
+  when: ansible_os_family == 'Debian'
 
 - name: Ensure fail2ban is started
   service: name=fail2ban state=started

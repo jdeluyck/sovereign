@@ -1,0 +1,35 @@
+---
+# Defines tasks applicable for Chrony
+
+- name: Install chrony
+  package: name=chrony state=present
+  tags:
+    - dependencies
+
+- name: Remove CentOS default NTP pool
+  lineinfile:
+    path: /etc/chrony.conf
+    state: absent
+    regexp: '^server+*iburst$'
+
+- name: Add custom NTP entries
+  lineinfile: 
+    path: /etc/chrony.conf
+    insertafter: '^# Please consider joining the pool'
+    line: 'server {{ item }} iburst'
+  loop: "{{ ntp_servers|flatten(levels=1) }}"
+    
+- name: Restrict chrony network access
+  lineinfile:
+    path: /etc/chrony.conf
+    regex: '^bindcmdaddress='
+    line: 'bindcmdaddress {{ item }}'
+  loop: 
+    - 127.0.0.1
+    - ::1
+
+- name: Make sure chrony is enabled
+  service: name=chrony enabled=yes
+  notify:
+    - restart chrony
+

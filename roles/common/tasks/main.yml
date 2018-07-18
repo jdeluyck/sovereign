@@ -3,11 +3,25 @@
   apt: update_cache=yes
   tags:
     - dependencies
+  when: ansible_os_family == 'Debian'
 
 - name: Upgrade all safe packages
   apt: upgrade=safe
   tags:
     - dependencies
+  when: ansible_os_family == 'Debian'
+
+- name: setup centos epel repo
+  yum: name=epel-release state=present
+  tags:
+    - dependencies
+  when: ansible_os_family == 'RedHat'
+
+- name: Upgrade yum packages
+  yum: update_cache=yes name=* state=latest
+  tags:
+    - dependencies 
+  when: ansible_os_family == 'RedHat'
 
 - name: Install necessities and nice-to-haves
   apt: pkg={{ item }} state=installed
@@ -32,26 +46,37 @@
     - zsh
   tags:
     - dependencies
+  when: ansible_os_family == 'Debian'
 
-- name: timezone - configure /etc/timezone
-  copy:
-    content: "{{ common_timezone | regex_replace('$', '\n') }}"
-    dest: /etc/timezone
-    owner: root
-    group: root
-    mode: 0644
+  name: Install necessities and nice-to-haves
+  yum: name={{ item }} state=installed
+  with_items:
+    - git
+    - htop
+    - iftop
+    - iotop
+    - ruby
+    - screen
+    - sudo
+    - vim
+    - zsh
+  when: ansible_os_family == 'RedHat'
+
+- name: configure timezone
+  timezone: name={{ common_timezone }}
   register: common_timezone_config
 
 - name: timezone - Set localtime to UTC
   file: src=/usr/share/zoneinfo/Etc/UTC dest=/etc/localtime
-  when: common_timezone_config.changed
+  when: common_timezone_config.changed && ansible_os_family == 'Debian'
 
 - name: timezone - reconfigure tzdata
   command: dpkg-reconfigure --frontend noninteractive tzdata
-  when: common_timezone_config.changed
+  when: common_timezone_config.changed && ansible_os_family == 'Debian'
 
 - name: Apticron email configuration
   template: src=apticron.conf.j2 dest=/etc/apticron/apticron.conf
+  when: ansible_os_family == 'Debian'
 
 - name: Create decrypted directory (even if encfs isn't used)
   file: state=directory path=/decrypted
@@ -72,5 +97,10 @@
 - include: ufw.yml tags=ufw
 - include: security.yml tags=security
 - include: ntp.yml tags=ntp
+  when: ansible_os_family == 'Debian'
+
+- include: chrony.yml tags=ntp
+  when: ansible_os_family == 'RedHat'
+
 - include: google_auth.yml tags=google_auth
 - include: postgres.yml

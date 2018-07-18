@@ -8,6 +8,17 @@
     - python-psycopg2
   tags:
     - dependencies
+  when: ansible_os_family == 'Debian'
+
+- name: Install Postgres
+  package: name={{ item }} state=installed
+  with_items:
+    - postgresql-server
+    - python-psycopg2
+  tags:
+    - dependencies
+  when: ansible_os_family == 'RedHat'
+
 
 - name: Set password for PostgreSQL admin user
   become: true
