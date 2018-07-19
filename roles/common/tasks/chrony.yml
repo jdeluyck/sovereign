@@ -22,7 +22,7 @@
 - name: Restrict chrony network access
   lineinfile:
     path: /etc/chrony.conf
-    regex: '^bindcmdaddress='
+    regexp: '^bindcmdaddress='
     line: 'bindcmdaddress {{ item }}'
   loop: 
     - 127.0.0.1
