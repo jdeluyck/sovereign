@@ -1,0 +1,31 @@
+# Install and activate yum-cron
+
+- name: Install yum-cron
+  package: name=yum-cron state=present
+  tags:
+    dependencies
+
+- name: Configure yum-cron to apply security updates
+  lineinfile: 
+    path: /etc/yum/yum-cron.conf
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^update_cmd', line: 'update_cmd = security' }
+    - { regexp: '^apply_updates', line: 'apply_updates = yes' }
+    - { regexp: '^download_updates', line: 'download_updates = yes' }
+    - { regexp: '^update_message', line: 'update_message = yes' }
+    - { regexp: '^system_name', line: 'system_name = {{ ansible_fqdn }}' } 
+    
+    - { regexp: '^emit_via', line: 'emit_via = email' } 
+    - { regexp: '^email_from', line: 'email_from = root@{{ domain }}' }
+    - { regexp: '^email_to', line: 'email_to = {{ main_user_name }}@{{ domain }}' }
+  tags:
+    yum-cron
+    
+- name: Activate yum-cron
+  service: name=yum-cron state=enabled enabled=yes
+  tags: yum-cron
+
+
+
