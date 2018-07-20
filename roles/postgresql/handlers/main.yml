@@ -1,0 +1,6 @@
+- name: init postgresql db
+  command: /usr/bin/postgresql-setup initdb
+  
+- name: restart posgresql
+  service: name=postgresql state=restarted
+  
