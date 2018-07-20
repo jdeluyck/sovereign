@@ -1,0 +1,77 @@
+- name: Install dracut-crypt-ssh repo file
+  get_url: 
+    url: "{{ dracut_crypt_ssh_repo }}"
+    dest: /etc/yum.repos.d/rbu-dracut-crypt-ssh-epel-7.repo
+    mode: 0644
+    owner: root
+    group: root
+  tags: dependencies
+
+- name: Install dracut-crypt-ssh package
+  package: name=dracut-crypt-ssh state=present update_cache=yes
+  tags: dependencies
+
+- name: Create dracut-crypt-ssh ssh key directory
+  file: path="{{ dracut_crypt_ssh_dir }}" mode=0700 owner=root group=root state=directory
+  tags: dracut-crypt-ssh
+
+- name: Install dracut-crypt-ssh ssh keys
+  copy: src="{{ item }}" dest="{{ dracut_crypt_ssh_dir }}/{{ item | basename }}" mode="0400" owner="root" group="root"
+  loop:
+    - "{{ dracut_crypt_ssh_rsa_key }}"
+    - "{{ dracut_crypt_ssh_rsa_key }}.pub"
+    - "{{ dracut_crypt_ssh_ecdsa_key }}"
+    - "{{ dracut_crypt_ssh_ecdsa_key }}.pub"
+  tags: dracut-crypt-ssh
+  notify: rebuild dracut
+    
+- name: Install dracut-crypt-ssh authorized hosts
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', dracut_crypt_ssh_authorized_keys) }}"
+    path: "{{ dracut_crypt_ssh_dir }}/authorized_keys"
+    manage_dir: no
+  tags: dracut-crypt-ssh
+  notify: rebuild dracut
+  
+- name: Configure dracut - remove unwanted config
+  lineinfile: 
+    state: absent
+    regexp: "{{ item }}"
+    path: /etc/dracut.conf.d/crypt-ssh.conf
+    backup: yes
+  loop:
+    - '^dropbear_port=(?!{{ dracut_crypt_ssh_port }})'
+    - '^dropbear_rsa_key="(?!{{ dracut_crypt_ssh_dir }}/{{ dracut_crypt_ssh_rsa_key | basename }}")'
+    - '^dropbear_ecdsa_key="(?!{{ dracut_crypt_ssh_dir }}/{{ dracut_crypt_ssh_ecdsa_key | basename }}")'
+    - '^dropbear_acl="(?!{{ dracut_crypt_ssh_dir }}/authorized_keys")'
+  tags: dracut-crypt-ssh
+  notify: rebuild dracut
+  
+- name: Configure dracut - add good config
+  lineinfile:
+    line: "{{ item }}"
+    path: /etc/dracut.conf.d/crypt-ssh.conf
+  loop:
+    - 'dropbear_port={{ dracut_crypt_ssh_port }}'
+    - 'dropbear_rsa_key="{{ dracut_crypt_ssh_dir }}/{{ dracut_crypt_ssh_rsa_key | basename }}"'
+    - 'dropbear_ecdsa_key="{{ dracut_crypt_ssh_dir }}/{{ dracut_crypt_ssh_ecdsa_key | basename }}"'
+    - 'dropbear_acl="{{ dracut_crypt_ssh_dir }}/authorized_keys"'
+  tags: dracut-crypt-ssh
+  notify: rebuild dracut
+  
+- name: Configure grub2
+  lineinfile:
+    path: /etc/default/grub
+    backrefs: yes
+    backup: yes
+    regexp: '^(GRUB_CMDLINE_LINUX=(?!.*{{ item }})\"[^\"]+)(\".*)'
+    line: '\1 {{ item }}\2'
+  loop:
+    - "rd.neednet=1"
+    - "ip={{ dracut_crypt_ssh_ip }}"
+  tags: dracut-crypt-ssh
+  notify: update grub config
+
+

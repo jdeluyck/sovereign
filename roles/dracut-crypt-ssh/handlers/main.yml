@@ -1,0 +1,5 @@
+- name: rebuild dracut
+  command: "dracut -f"
+
+- name: update grub config
+  command: "/sbin/grub2-mkconfig -o {{ grub_cfg }}"

@@ -1,0 +1,14 @@
+# dracut-crypt-ssh
+# see https://github.com/dracut-crypt-ssh/dracut-crypt-ssh
+
+dracut_crypt_ssh_repo: https://copr.fedorainfracloud.org/coprs/rbu/dracut-crypt-ssh/repo/epel-7/rbu-dracut-crypt-ssh-epel-7.repo
+dracut_crypt_ssh_dir: /root/dracut-crypt-ssh
+dracut_crypt_authorized_keys_file: "{{ dracut_crypt_ssh_dir }}/authorized_keys"
+
+dracut_crypt_ssh_port: 222
+dracut_crypt_ssh_ip: dhcp
+#dracut_crypt_ssh_ip: '192.168.0.100::192.168.0.1:255.255.255.0:centos:enp0s8:off'
+# See https://www.kernel.org/pub/linux/utils/boot/dracut/dracut.html#_network
+
+grub_cfg: /etc/grub2.cfg
+# grub_cfg: /boot/efi/EFI/centos/grub.cfg
