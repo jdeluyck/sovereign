@@ -3,9 +3,45 @@
   tags:
     - dependencies
 
-  name: Copy fail2ban configuration into place
-  template: src=etc_fail2ban_fail2ban.d_00-local.conf.j2 dest=/etc/fail2ban/fail2ban.d/00-local.conf
+- name: Copy fail2ban configuration into place
+  template: src=etc_fail2ban_jail.d_01-common.conf.j2 dest=/etc/fail2ban/jail.d/01-common.conf
   notify: restart fail2ban
+  tags:
+    - fail2ban
+
+- name: Install fail2ban sshd config
+  copy: src=files/etc_fail2ban_jail.d_01-sshd.conf dest=/etc/fail2ban/jail.d/01-sshd.conf
+  notify: restart fail2ban
+  tags:
+    - fail2ban
+
+
+- name: Install fail2ban postfix config
+  copy: src=files/etc_fail2ban_jail.d_01-postfix.conf dest=/etc/fail2ban/jail.d/01-postfix.conf
+  when: ( postfix_installed | default(False) )
+  notify: restart fail2ban
+  tags:
+    - fail2ban
+
+
+- name: Install fail2ban dropbear config
+  template: src=etc_fail2ban_fail2ban.d_01-dropbear.conf.j2 dest=/etc/fail2ban/jail.d/01-dropbear.conf
+  when: ( dracut_crypt_ssh_installed | default(False) )
+  notify: restart fail2ban
+  tags:
+    - fail2ban
+
+
+- name: Install fail2ban dovecot config
+  copy: src=files/etc_fail2ban_jail.d_01-dovecot.conf dest=/etc/fail2ban/jail.d/01-dovecot.conf
+  when: ( dovecot_installed | default(False) )
+  notify: restart fail2ban
+  tags:
+    - fail2ban
 
 - name: Ensure fail2ban is started
   service: name=fail2ban state=started enabled=yes
+  tags:
+    - fail2ban
+
+

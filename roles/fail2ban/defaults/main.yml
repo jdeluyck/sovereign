@@ -1,0 +1,4 @@
+admin_email: "{{ main_user_name }}@{{ domain }}"
+friendly_networks:
+  - ""
+
