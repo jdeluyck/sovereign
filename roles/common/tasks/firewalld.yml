@@ -3,27 +3,11 @@
 
 - name: Install firewalld
   package: name=firewalld state=present
-  tags:
-    - dependencies
-    - firewalld
+  tags: dependencies
 
-- #name: Deny everything
-  #ufw: policy=deny
-  #tags: ufw
-
-  #- name: Set firewall rule for DNS
-  #  ufw: rule=allow port=domain
-  #tags: ufw
-
-- name: Set firewall rule for mosh
-  firewalld: port=60000-61000/tcp permanent=true state=enabled
-  tags: firewalld
-
-- name: Set firewall rules for web traffic and SSH
+- name: Set firewall rules for SSH
   firewalld: service={{ item }} permanent=true state=enabled
   loop:
-    - http
-    - https
     - ssh
   tags: firewalld
 
