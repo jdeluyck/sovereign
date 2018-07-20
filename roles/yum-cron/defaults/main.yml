@@ -1,0 +1,10 @@
+#yum_cron config
+
+yum_cron_update_cmd: security
+yum_cron_apply_updates: yes
+yum_cron_download_updates: yes
+yum_cron_update_message: yes
+yum_cron_system_name: "{{ ansible_fqdn }}"
+yum_cron_emit_via: email
+yum_cron_email_from: "root@{{ domain }}"
+yum_cron_email_to: "{{ main_user_name }}@{{ domain }}"

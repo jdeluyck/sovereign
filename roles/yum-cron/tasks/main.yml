@@ -2,8 +2,24 @@
 
 - name: Install yum-cron
   package: name=yum-cron state=present
-  tags:
-    dependencies
+  tags: dependencies
+
+- name: Configure yum-cron - remove old config
+  lineinfile:
+    path: /etc/yum/yum-cron.conf
+    regexp: "{{ item }}"
+    state: absent
+  loop: 
+    - "^update_cmd=(?!{{ yum_cron_update_cmd }})"
+    - "^apply_updates=(?!{{ yum_cron_apply_updates }})"
+    - "^download_updates=(?!{{ yum_cron_download_updates }})"
+    - "^update_message=(?!{{ yum_cron_update_message }})"
+    - "^system_name=(?!{{ yum_cron_system_name }})"
+    - "^emit_via=(?!{{ yum_cron_emit_via }})"
+    - "^email_from=(?!{{ yum_cron_email_from }})"
+    - "^email_to=(?!{{ yum_cron_email_to }})"
+  tags: yum-cron
+  notify: restart yum-cron
 
 - name: Configure yum-cron to apply security updates
   lineinfile: 
@@ -20,12 +36,9 @@
     - { regexp: '^emit_via', line: 'emit_via = email' } 
     - { regexp: '^email_from', line: 'email_from = root@{{ domain }}' }
     - { regexp: '^email_to', line: 'email_to = {{ main_user_name }}@{{ domain }}' }
-  tags:
-    yum-cron
+  tags: yum-cron
+  notify: restart yum-cron
     
 - name: Activate yum-cron
-  service: name=yum-cron state=enabled enabled=yes
+  service: name=yum-cron enabled=yes
   tags: yum-cron
-
-
-
