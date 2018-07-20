@@ -1,0 +1,4 @@
+- name: setup centos epel repo
+  yum: name=epel-release state=present
+  tags: dependencies
+
