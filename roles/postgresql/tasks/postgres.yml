@@ -9,7 +9,11 @@
     - python-psycopg2
   tags:
     - dependencies
-  notify: init postgres db
+  
+- name: init postgresql db
+  command: /usr/bin/postgresql-setup initdb
+  args:
+    creates: /var/lib/pgsql/data/pg_hba.conf
 
 - name: Configure postgresql for password authentication
   replace:
@@ -18,6 +22,7 @@
     replace: '\1md5'
     path: /var/lib/pgsql/data/pg_hba.conf
   tags: postgresql
+  notify: restart postgresql
 
 - name: Start postgresql
   service: name=postgresql state=started enabled=yes
