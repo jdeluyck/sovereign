@@ -6,30 +6,46 @@
   tags:
     - dependencies
 
-- name: Remove CentOS default NTP pool
+- name: Remove unwanted NTP pools
   lineinfile:
     path: /etc/chrony.conf
     state: absent
-    regexp: '^server+*iburst$'
+    regexp: '^server (?!{{ item }}) iburst$'
+  loop: "{{ ntp_servers|flatten(levels=1) }}"
+  notify: restart chronyd
+  tags: chrony
 
 - name: Add custom NTP entries
   lineinfile: 
     path: /etc/chrony.conf
-    insertafter: '^# Please consider joining the pool'
     line: 'server {{ item }} iburst'
   loop: "{{ ntp_servers|flatten(levels=1) }}"
+  notify: restart chronyd
+  tags: chrony
     
+- name: Remove bad chrony network access lines
+  lineinfile:
+    state: absent
+    path: /etc/chrony.conf
+    regexp: '^bindcmdaddress=(?!{{ item }})'
+  loop: 
+    - 127.0.0.1
+    - ::1
+  notify: restart chronyd
+  tags: chrony
+
 - name: Restrict chrony network access
   lineinfile:
     path: /etc/chrony.conf
-    regexp: '^bindcmdaddress='
     line: 'bindcmdaddress {{ item }}'
   loop: 
     - 127.0.0.1
     - ::1
+  notify: restart chronyd
+  tags: chrony
+
+
 
 - name: Make sure chrony is enabled
-  service: name=chrony enabled=yes
-  notify:
-    - restart chrony
-
+  service: name=chronyd enabled=yes
+  tags: chrony
