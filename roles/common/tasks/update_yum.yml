@@ -1,0 +1,5 @@
+---
+- name: Upgrade yum packages
+  yum: update_cache=yes name=* state=latest
+  tags: dependencies 
+

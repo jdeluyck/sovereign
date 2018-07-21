@@ -1,0 +1,4 @@
+- name: configure timezone
+  timezone: name={{ common_timezone }}
+  register: common_timezone_config
+  tags: dependencies
