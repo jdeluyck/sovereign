@@ -1,0 +1,46 @@
+- name: Install rspamd repository
+  get_url: 
+    url: "{{ rspam_repo_url }}"
+    dest: /etc/yum.repos.d/rspamd.repo
+    mode: 0644
+    owner: root
+    group: root
+  tags: dependencies
+  
+- name: Install rspamd package
+  package: name="{{ item }}" state=present update_cache=yes
+  loop:
+    - rspamd
+    - redis
+  tags: dependencies
+  
+- name: Copy DMARC configuration into place
+  template: src=etc_rspamd_local.d_dmarc.conf.j2 dest=/etc/rspamd/local.d/dmarc.conf owner=root group=root mode="0644"
+  notify: restart rspamd
+  tags: rspamd
+
+- name: Configure Rspamd to use Redis
+  copy: src=etc_rspamd_local.d_redis.conf dest=/etc/rspamd/local.d/redis.conf owner=root group=root mode="0644"
+  notify: restart rspamd
+  tags: rspamd
+
+- name: Copy DKIM configuration into place
+  copy: src=etc_rspamd_override.d_dkim_signing.conf dest=/etc/rspamd/override.d/dkim_signing.conf owner=root group=root mode="0644"
+  notify: restart rspamd
+  tags: rspamd
+
+- name: Create dkim key directory
+  file: path=/var/lib/rspamd/dkim state=directory owner=_rspamd group=_rspamd
+  tags: rspamd
+
+- name: Generate DKIM keys
+  shell: rspamadm dkim_keygen -s default -d {{ item.name }} -k {{ item.name }}.default.key > {{ item.name }}.default.txt
+  args:
+    creates: /var/lib/rspamd/dkim/{{ item.name }}.default.key
+    chdir: /var/lib/rspamd/dkim/
+  loop: "{{ mail_virtual_domains }}"
+  tags: rspamd
+
+- name: Start redis
+  service: name=redis-server state=started
+  tags: rspamd
