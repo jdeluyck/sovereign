@@ -1,0 +1,26 @@
+- name: Create postfix database user
+  postgresql_user: login_host=localhost login_user="{{ db_admin_username }}" login_password="{{ db_admin_password }}" name="{{ mail_db_username }}" password="{{ mail_db_password }}" encrypted=yes state=present
+  notify: 
+    - restart postfix
+  tags: postfix
+
+- name: Create postfix database
+  postgresql_db: login_host=localhost login_user="{{ db_admin_username }}" login_password="{{ db_admin_password }}" name="{{ mail_db_database }}" state=present owner="{{ mail_db_username }}" 
+  tags: postfix
+
+- name: Drop and create postfix tables
+  block:
+    - name: copy database template
+      copy: src=files/etc_postfix_postfix_db.sql dest=/etc/postfix/postfix_db.sql
+    - name: create tables
+      postgresql_db: login_host=localhost login_user="{{ mail_db_username }}" login_password="{{ mail_db_password }}" name="{{ mail_db_database }}" state=restore target=/etc/postfix/postfix_db.sql
+      notify: restart postfix
+
+- name: Populate tables (if needed)
+  block:
+    - name: copy table template
+      template: src=templates/etc_postfix_postfix_tables.sql.j2 dest=/etc/postfix/postfix_tables.sql
+    - name: populate tables
+      postgresql_db: login_host=localhost login_user="{{ mail_db_username }}" login_password="{{ mail_db_password }}" name="{{ mail_db_database }}" state=restore target=/etc/postfix/postfix_tables.sql
+      
+

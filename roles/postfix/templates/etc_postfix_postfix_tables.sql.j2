@@ -1,0 +1,36 @@
+{% for virtual_domain in mail_virtual_domains %}
+        {% set domain_id = loop.index %}
+        INSERT INTO "virtual_domains" ("id", "name")
+        VALUES (
+                '{{ domain_id }}',
+                '{{ virtual_domain.name }}'
+        );
+        
+        {% for virtual_user in virtual_domain.users %}
+        INSERT INTO "virtual_users"  ("domain_id", "password" , "email")
+	VALUES (
+		'{{ domain_id }}',
+		'{{ virtual_user.password | password_hash('sha512') }}',
+		'{{ virtual_user.account }}@{{ virtual_domain.name }}'
+	);
+        {% endfor %}
+
+        {% if virtual_domain.aliases is defined %}
+                {% for virtual_alias in virtual_domain.aliases %}
+                        INSERT INTO "virtual_aliases" ("domain_id", "source", "destination")
+                        VALUES (
+                                '{{ domain_id }}',
+                                '{{ virtual_alias.source }}',
+                                '{{ virtual_alias.destination }}'
+                        );
+                        {% endfor %}
+        {% endif %}
+        
+        {% if virtual_domain.domain_aliases is defined %}
+                {% for domain_alias in virtual_domain.domain_aliases %}
+        
+                {% endfor %}
+        {% endif %}
+
+{% endfor %}
+

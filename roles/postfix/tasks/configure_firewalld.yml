@@ -1,0 +1,9 @@
+- name: Set firewall rules for postfix
+  firewalld: service={{ item }} permanent=true state=enabled
+  loop:
+    - smtp
+    - smtps
+    - smtp-submission
+  tags: 
+    - firewalld
+    - postfix

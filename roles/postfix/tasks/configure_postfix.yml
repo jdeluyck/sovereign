@@ -1,0 +1,15 @@
+- name: Copy main.cf
+  template: src=etc_postfix_main.cf.j2 dest=/etc/postfix/main.cf owner=root group=root
+  notify: restart postfix
+
+- name: Copy master.cf
+  copy: src=etc_postfix_master.cf dest=/etc/postfix/master.cf owner=root group=root
+  notify: restart postfix
+
+- name: Copy additional postfix configuration files
+  template: src=etc_postfix_{{ item }}.j2 dest=/etc/postfix/{{ item }} owner=root group=root
+  with_items:
+    - pgsql-virtual-alias-maps.cf
+    - pgsql-virtual-mailbox-domains.cf
+    - pgsql-virtual-mailbox-maps.cf
+  notify: restart postfix

@@ -1,0 +1,27 @@
+- name: Install yum utilities
+  package: name={{ item }} state=present
+  loop:
+    - yum-utils
+    - yum-plugin-priorities
+  tags: dependencies
+
+- name: Save state of CentOS repo 
+  command: yum-config-manager -q base centosplus updates
+  register: repo_state_before
+  changed_when: False
+        
+- name: Configure CentOS repo for postfix
+  command: yum-config-manager -q --enable centosplus --setopt=centosplus.priority=100 --setopt base.exclude=postfix --setopt updates.exclude=postfix --save
+  register: repo_state_after
+  changed_when: repo_state_before.stdout != repo_state_after.stdout
+  tags: dependencies
+
+- name: Install postfix from CentOSPlus
+  yum: name=postfix state=latest 
+  tags: dependencies
+  
+- name: Install other packages
+  package: name="{{ item }}" state=present
+  loop: 
+    - postgrey
+  tags: dependencies

@@ -1,0 +1,15 @@
+db_admin_username: "{{ postgres_admin_user }}"
+db_admin_password: "{{ postgres_admin_password }}"
+
+mail_db_username: "{{ postgres_mail_db_user }}" 
+mail_db_password: "{{ postgres_mail_db_password }}" 
+mail_db_database: "{{ postgres_mail_db_name }}" 
+
+mail_server_hostname: "mail.{{ domain }}"
+mail_server_autoconfig_hostname: "autoconfig.{{ domain }}"
+# See https://we.riseup.net/debian/mail#getting-your-postfix-anonymized
+mail_header_privacy: 1
+
+# virtual domains
+mail_virtual_domains: []
+

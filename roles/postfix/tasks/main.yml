@@ -1,0 +1,25 @@
+- include: install_packages.yml
+
+- name: PostgreSQL prereq
+  import_role: name=postgresql
+
+- include: create_db.yml
+
+- include: mail_header_privacy.yml
+  when: mail_header_privacy == 1
+
+- name: LetsEncrypt prereq
+  import_role: name=letsencrypt
+
+- name: Rspamd prereq
+  import_role: name=rspamd
+  
+#- name: dovecot prereq
+#  import_role: name=dovecot
+
+- include: configure_postfix.yml
+
+- include: configure_firewalld.yml
+
+# Finally... for fail2ban
+- set_fact: postfix_installed=True

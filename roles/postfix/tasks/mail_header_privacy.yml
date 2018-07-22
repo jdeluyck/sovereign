@@ -1,0 +1,6 @@
+- name: Create postfix maps directory
+  file: path=/etc/postfix/maps state=directory owner=root group=root
+
+- name: Copy smtp_header_checks.pcre
+  copy: src=etc_postfix_maps_smtp_header_checks.pcre dest=/etc/postfix/maps/smtp_header_checks.pcre owner=root group=root
+
