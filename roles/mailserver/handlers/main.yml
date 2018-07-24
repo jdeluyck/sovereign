@@ -1,5 +1,4 @@
-- name: restart postfix
-  service: name=postfix state=restarted
+  
 
 - name: restart dovecot
   service: name=dovecot state=restarted
@@ -9,10 +8,8 @@
 
 - name: restart solr
   service: name=tomcat7 state=restarted
+ 
 
-- name: import sql postfix
-  action: shell PGPASSWORD='{{ mail_db_password }}' psql -h localhost -d {{ mail_db_database }} -U {{ mail_db_username }} -f /etc/postfix/import.sql --set ON_ERROR_STOP=1
-  notify: restart postfix
 
 - name: restart rspamd
   service: name=rspamd state=restarted
