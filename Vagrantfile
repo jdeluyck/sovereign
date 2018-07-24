@@ -10,7 +10,7 @@ Vagrant.configure('2') do |config|
     ansible.host_key_checking = false
     ansible.extra_vars = { ansible_ssh_user: 'vagrant', testing: true }
     ansible.groups = {
-      "testing" => ["jessie"]
+      "testing" => ["centos7"]
     }
 
     # ansible.tags = ['blog']
