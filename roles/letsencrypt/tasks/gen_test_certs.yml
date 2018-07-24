@@ -1,0 +1,31 @@
+- name: Install OpenSSL
+  package: name=openssl state=present
+  when: ansible_ssh_user == "vagrant"
+  
+- name: create /root/ssl
+  file: path=/root/ssl state=directory mode=0700 owner=root group=root
+  when: ansible_ssh_user == "vagrant"  
+
+- name: generate CA key and cert
+  command: openssl req -nodes -newkey rsa:2048 -keyout /root/ssl/ca.key -subj "/C=XX/L=Default City/O=Default Company Ltd/"
+  args:
+    creates: /root/ssl/ca.key
+  when: ansible_ssh_user == "vagrant"
+
+- name: generate CA certificate
+  command: openssl req -new -x509 -key /root/ssl/ca.key -out /root/ssl/wildcard_ca.crt -subj "/C=XX/L=Default City/O=Default Company Ltd/"
+  args:
+    creates: /root/ssl/wildcard_ca.crt
+  when: ansible_ssh_user == "vagrant"
+  
+- name: generate private test key and certificate
+  command: openssl req -nodes -newkey rsa:2048 -keyout /root/ssl/wildcard_private.key -out /root/ssl/mycert.csr -subj "/C=XX/L=Default City/O=Default Company Ltd/"
+  args:  
+    creates: /root/ssl/wildcard_private.key
+  when: ansible_ssh_user == "vagrant"
+  
+- name: generate wildcard certificate
+  command: openssl x509 -req -days 365 -in /root/ssl/mycert.csr -signkey /root/ssl/wildcard_private.key -out /root/ssl/wildcard_public_cert.crt
+  args:  
+    creates: /root/ssl/wildcard_public_cert.crt
+  when: ansible_ssh_user == "vagrant"

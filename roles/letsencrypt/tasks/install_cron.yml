@@ -1,0 +1,5 @@
+- name: Create live directory for LetsEncrypt cron job
+  file: state=directory path=/etc/letsencrypt/live group=root owner=root
+  
+- name: Install crontab entry for LetsEncrypt
+  copy: src=etc_cron-daily_letsencrypt-renew dest=/etc/cron.daily/letsencrypt-renew owner=root group=root mode=0755

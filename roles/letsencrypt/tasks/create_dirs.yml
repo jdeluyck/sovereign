@@ -1,0 +1,12 @@
+- name: Create directory for LetsEncrypt configuration and certificates
+  file: state=directory path=/etc/letsencrypt group=root owner=root
+  tags: letsencrypt
+
+- name: Create directory for pre-renewal scripts
+  file: state=directory path=/etc/letsencrypt/prerenew group=root owner=root
+  tags: letsencrypt
+
+- name: Create directory for post-renewal scripts
+  file: state=directory path=/etc/letsencrypt/postrenew group=root owner=root
+  tags: letsencrypt
+

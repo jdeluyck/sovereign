@@ -1,1 +1,13 @@
-- include: letsencrypt.yml
+- include: install_letsencrypt.yml
+- include: create_dirs.yml
+- include: install_cron.yml
+
+- block:
+    - include: gen_test_certs.yml
+    - include: copy_test_certs.yml
+  when: ansible_ssh_user == "vagrant"
+  
+- include: get_certs.yml
+  when: ansible_ssh_user != "vagrant"
+
+- set_fact: letsencrypt_installed=True
