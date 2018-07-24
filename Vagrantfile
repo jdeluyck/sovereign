@@ -5,6 +5,7 @@ Vagrant.configure('2') do |config|
   config.vm.network 'private_network', ip: '172.16.100.2'
 
   config.vm.provision :ansible do |ansible|
+    ansible.ask_vault_pass = true
     ansible.playbook = 'site.yml'
     ansible.host_key_checking = false
     ansible.extra_vars = { ansible_ssh_user: 'vagrant', testing: true }
@@ -32,6 +33,10 @@ Vagrant.configure('2') do |config|
   if Vagrant.has_plugin? 'vagrant-cachier'
     config.cache.enable :apt
     config.cache.scope = :box
+  end
+
+  config.vm.define 'centos7', primary: true do |centos7|
+    centos7.vm.box = 'centos/7'
   end
 
   # Debian 8 64-bit (officially supported)
